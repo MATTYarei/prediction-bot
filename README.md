@@ -29,7 +29,8 @@ Four agents run concurrently via `asyncio.gather`:
 - **TwitterAgent** — searches recent tweets for top market queries
 - **RedditAgent** — scrapes r/politics, r/PredictIt, r/Betting, etc.
 - **RSSAgent** — parses BBC, Reuters, NYT, Politico feeds
-- **PolymarketFetcher** — pulls up to 300 live markets from the CLOB API
+- **KalshiFetcher** — pulls live markets from the Kalshi REST API (primary)
+- **PolymarketFetcher** — pulls markets from the Polymarket CLOB API (optional, secondary)
 - **SentimentAgent** — Claude scores overall narrative vs. market odds
 
 ## Step 2 · Filter
@@ -61,7 +62,7 @@ Remaining markets scored and ranked by a weighted composite of volume, liquidity
    - Size within bounds
    - Total portfolio exposure < 50% of bankroll
    - No duplicate position on same market
-3. **Polymarket CLOB** API places the order (or logs dry-run)
+3. **Kalshi** API places the order (or logs dry-run); Polymarket used only if it is the configured venue
 4. Settlement watcher closes trades when markets resolve
 
 ## Step 5 · Learn (5 post-mortem agents)
@@ -99,12 +100,14 @@ watch -n 1800 python main.py
 | Key | Where to get | Required? |
 |-----|-------------|-----------|
 | `ANTHROPIC_API_KEY` | console.anthropic.com | ✅ Yes |
-| `POLYMARKET_API_KEY` | polymarket.com/api | ✅ Yes |
+| `KALSHI_API_KEY_ID` | kalshi.com → API settings | ✅ Yes (primary venue) |
+| `KALSHI_PRIVATE_KEY_PATH` | RSA private key `.pem` for Kalshi auth | ✅ Yes (primary venue) |
+| `POLYMARKET_API_KEY` | polymarket.com/api | Optional (secondary venue) |
 | `TWITTER_BEARER_TOKEN` | developer.twitter.com | Optional |
 | `REDDIT_CLIENT_ID/SECRET` | reddit.com/prefs/apps | Optional |
 | `NEWSAPI_KEY` | newsapi.org | Optional |
 
-The bot runs without Twitter/Reddit/NewsAPI keys — it will use RSS feeds and Polymarket data only.
+The bot runs without Twitter/Reddit/NewsAPI/Polymarket keys — it will use RSS feeds and Kalshi data only. Set `PRIMARY_VENUE=polymarket` in `.env` to switch venues.
 
 ## Going Live
 
